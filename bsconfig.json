@@ -1,0 +1,16 @@
+{
+  "name": "repacman",
+  "sources": "src",
+  "bs-dependencies": ["Reprocessing"],
+  "entries": [
+    {
+      "backend": "bytecode",
+      "main-module": "Indexhot"
+    },
+    {
+      "backend": "js",
+      "main-module": "Index"
+    }
+  ],
+  "refmt": 3
+}

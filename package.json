@@ -1,0 +1,17 @@
+{
+  "name": "repacman",
+  "scripts": {
+    "start": "./lib/bs/bytecode/indexhot.byte",
+    "start:native": "./lib/bs/native/index.native",
+    "build": "bsb -make-world",
+    "build:web": "bsb -make-world -backend js",
+    "build:native": "bsb -make-world -backend native",
+    "clean": "bsb -clean-world"
+  },
+  "dependencies": {
+    "Reprocessing": "schmavery/reprocessing"
+  },
+  "devDependencies": {
+    "bs-platform": "^3.0.0"
+  }
+}
