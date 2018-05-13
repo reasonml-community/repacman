@@ -29,7 +29,7 @@ let keyDirection = (state, env) => {
   | (false, true, false, false) => Down
   | (false, false, true, false) => Right
   | (false, false, false, true) => Left
-  | _ => state.direction
+  | _ => state.nextDirection
   };
 };
 
