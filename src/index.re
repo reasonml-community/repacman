@@ -129,9 +129,14 @@ let isColliding = (fruitPos, pacmanPos) => fruitPos == pacmanPos;
 
 let draw = (state, env) => {
   open Draw;
-  let fruits =
-    state.fruits
-    |> List.filter(fruit => ! isColliding(fruit.pos, state.pacman.pos));
+  let (fruits, newScore) = state.fruits
+  |> List.fold_left(((fruits, score), fruit) => {
+    if (isColliding(fruit.pos, state.pacman.pos)) {
+      (fruits, fruit.points + score)
+    } else {
+      ([fruit, ...fruits], score)
+    }
+  }, ([], state.score));
   background(Constants.white, env);
   stroke(Constants.black, env);
   grid
@@ -142,7 +147,7 @@ let draw = (state, env) => {
   noStroke(env);
   List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
-  {...state, fruits, pacman: pacmanState};
+  {...state, fruits, score: newScore, pacman: pacmanState};
 };
 
 run(~setup, ~draw, ());
