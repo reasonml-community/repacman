@@ -9,7 +9,7 @@ type direction =
 type state = {
   direction,
   nextDirection: direction,
-  pos: (float, float),
+  pos: (float, float)
 };
 
 let setup = env => {
@@ -73,7 +73,7 @@ let draw = (state, env) => {
       line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
       line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
     },
-    grid,
+    grid
   );
   noStroke(env);
   fill(Constants.red, env);
@@ -84,4 +84,3 @@ let draw = (state, env) => {
 };
 
 Reprocessing.run(~screen="canvas", ~setup, ~draw, ());
-
