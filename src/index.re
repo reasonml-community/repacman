@@ -35,19 +35,18 @@ let keyDirection = (state, env) => {
 
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (mod_float(x, 25.), mod_float(y, 25.));
-
-  let reverseDirection = switch (direction, nextDirection) {
-  | (Up, Down) => true
-  | (Down, Up) => true
-  | (Left, Right) => true
-  | (Right, Left) => true
-  | _ => false
-  };
-
+  let reverseDirection =
+    switch (direction, nextDirection) {
+    | (Up, Down) => true
+    | (Down, Up) => true
+    | (Left, Right) => true
+    | (Right, Left) => true
+    | _ => false
+    };
   if (reverseDirection) {
     nextDirection;
   } else {
-    switch (intersection) {
+    switch intersection {
     | (0., 0.) => nextDirection
     | _ => direction
     };
@@ -68,8 +67,7 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-
-  switch (direction) {
+  switch direction {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
   | Right => {direction, nextDirection, pos: (x +. 1., y)}
@@ -92,7 +90,8 @@ let draw = (state, env) => {
   fill(Constants.red, env);
   let nextDirection = keyDirection(state, env);
   let state = move({...state, nextDirection});
-  rectf(~pos=state.pos, ~width=10., ~height=10., env);
+  let (x, y) = state.pos;
+  rectf(~pos=(x -. 5., y -. 5.), ~width=10., ~height=10., env);
   state;
 };
 
