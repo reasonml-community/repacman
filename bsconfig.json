@@ -5,7 +5,11 @@
   "entries": [
     {
       "backend": "bytecode",
-      "main-module": "Indexhot"
+      "main-module": "IndexHot"
+    },
+    {
+      "backend": "native",
+      "main-module": "Index"
     },
     {
       "backend": "js",

@@ -12,6 +12,6 @@
     "Reprocessing": "schmavery/reprocessing"
   },
   "devDependencies": {
-    "bs-platform": "^3.0.0"
+    "bs-platform": "bsansouci/bsb-native#2.1.1"
   }
 }

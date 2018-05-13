@@ -55,7 +55,7 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-  
+
   switch (direction) {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
@@ -83,4 +83,4 @@ let draw = (state, env) => {
   state;
 };
 
-Reprocessing.run(~screen="canvas", ~setup, ~draw, ());
+Reprocessing.run(~setup, ~draw, ());
