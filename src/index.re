@@ -11,18 +11,18 @@ type pos = (float, float);
 type agent = {
   direction,
   nextDirection: direction,
-  pos
+  pos,
 };
 
 type fruit = {
   pos,
-  points: int
+  points: int,
 };
 
 type state = {
   pacman: agent,
   score: int,
-  fruits: list(fruit)
+  fruits: list(fruit),
 };
 
 let gridSize = 200.;
@@ -38,16 +38,20 @@ let createRandomFruit = () => {
 };
 
 let setup = env => {
-  let fruits = [createRandomFruit(), createRandomFruit(), createRandomFruit()];
+  let fruits = [
+    createRandomFruit(),
+    createRandomFruit(),
+    createRandomFruit(),
+  ];
   Env.size(~width=200, ~height=200, env);
   {
     pacman: {
       direction: Down,
       nextDirection: Down,
-      pos: (25., 25.)
+      pos: (25., 25.),
     },
     score: 0,
-    fruits
+    fruits,
   };
 };
 
@@ -70,7 +74,7 @@ let keyDirection = (state: agent, env) => {
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (
     x == 0. || x == 200. ? 1. : mod_float(x, 25.),
-    y == 0. || y == 200. ? 1. : mod_float(y, 25.)
+    y == 0. || y == 200. ? 1. : mod_float(y, 25.),
   );
   let reverseDirection =
     switch (direction, nextDirection) {
@@ -83,7 +87,7 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   if (reverseDirection) {
     nextDirection;
   } else {
-    switch intersection {
+    switch (intersection) {
     | (0., 0.) => nextDirection
     | _ => direction
     };
@@ -104,7 +108,7 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-  switch direction {
+  switch (direction) {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
   | Right => {direction, nextDirection, pos: (x +. 1., y)}
@@ -122,6 +126,17 @@ let drawPacman = (state: agent, env) => {
   state;
 };
 
+/* TODO: some random fruit bizniz
+
+let getRandomFruit = () =>  
+
+let addRandomFruits = fruits => {
+  switch fruits {
+  | [_, _, _] => fruits
+  | _ => //???
+  }
+} */
+
 let drawFruit = (fruit: fruit, env) =>
   Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
 
@@ -132,14 +147,17 @@ let scoreDisplay = (~score: int, env) =>
 
 let draw = (state, env) => {
   open Draw;
-  let (fruits, newScore) = state.fruits
-  |> List.fold_left(((fruits, score), fruit) => {
-    if (isColliding(fruit.pos, state.pacman.pos)) {
-      (fruits, fruit.points + score)
-    } else {
-      ([fruit, ...fruits], score)
-    }
-  }, ([], state.score));
+  let (fruits, newScore) =
+    state.fruits
+    |> List.fold_left(
+         ((fruits, score), fruit) =>
+           if (isColliding(fruit.pos, state.pacman.pos)) {
+             (fruits, fruit.points + score);
+           } else {
+             ([fruit, ...fruits], score);
+           },
+         ([], state.score),
+       );
   background(Constants.white, env);
   stroke(Constants.black, env);
   grid
