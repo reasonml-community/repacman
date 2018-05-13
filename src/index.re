@@ -148,7 +148,7 @@ let draw = (state, env) => {
        line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
      });
   noStroke(env);
-  scoreDisplay(~score=state.score, env);
+  scoreDisplay(~score=newScore, env);
   List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
   {...state, fruits, score: newScore, pacman: pacmanState};
