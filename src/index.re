@@ -6,22 +6,46 @@ type direction =
   | Left
   | Right;
 
+type pos = (float, float);
+
 type agent = {
   direction,
   nextDirection: direction,
-  pos: (float, float),
+  pos
 };
 
-type state = {pacman: agent};
+type fruit = {
+  pos,
+  points: int
+};
+
+type state = {
+  pacman: agent,
+  score: int,
+  fruits: list(fruit)
+};
+
+let gridSize = 200.;
+let count = 8;
+let gridStep = gridSize /. float_of_int(count);
+
+let createRandomFruit = () => {
+  let x = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
+  let y = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
+  {pos: (x, y), points: 1};
+};
 
 let setup = env => {
+  let fruits = [createRandomFruit(), createRandomFruit(), createRandomFruit()];
   Env.size(~width=200, ~height=200, env);
   {
     pacman: {
       direction: Down,
       nextDirection: Down,
-      pos: (25., 25.),
+      pos: (25., 25.)
     },
+    score: 0,
+    fruits: fruits
   };
 };
 
@@ -96,6 +120,11 @@ let drawPacman = (state: agent, env) => {
   state;
 };
 
+let drawFruit = (fruit: fruit, env) => {
+  open Draw;
+  ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env);
+};
+
 let draw = (state, env) => {
   open Draw;
   background(Constants.white, env);
@@ -106,6 +135,7 @@ let draw = (state, env) => {
        line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
      });
   noStroke(env);
+  List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
   {...state, pacman: pacmanState};
 };
