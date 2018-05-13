@@ -127,6 +127,9 @@ let drawFruit = (fruit: fruit, env) =>
 
 let isColliding = (fruitPos, pacmanPos) => fruitPos == pacmanPos;
 
+let scoreDisplay = (~score: int, env) =>
+  Draw.(text(~body=string_of_int(score), ~pos=(3, 3), env));
+
 let draw = (state, env) => {
   open Draw;
   let (fruits, newScore) = state.fruits
@@ -145,6 +148,7 @@ let draw = (state, env) => {
        line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
      });
   noStroke(env);
+  scoreDisplay(~score=state.score, env);
   List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
   {...state, fruits, score: newScore, pacman: pacmanState};
