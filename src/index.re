@@ -35,9 +35,22 @@ let keyDirection = (state, env) => {
 
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (mod_float(x, 25.), mod_float(y, 25.));
-  switch (intersection) {
-  | (0., 0.) => nextDirection
-  | _ => direction
+
+  let reverseDirection = switch (direction, nextDirection) {
+  | (Up, Down) => true
+  | (Down, Up) => true
+  | (Left, Right) => true
+  | (Right, Left) => true
+  | _ => false
+  };
+
+  if (reverseDirection) {
+    nextDirection;
+  } else {
+    switch (intersection) {
+    | (0., 0.) => nextDirection
+    | _ => direction
+    };
   };
 };
 
@@ -83,4 +96,4 @@ let draw = (state, env) => {
   state;
 };
 
-Reprocessing.run(~setup, ~draw, ());
+run(~setup, ~draw, ());
