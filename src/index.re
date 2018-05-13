@@ -26,7 +26,9 @@ type state = {
 };
 
 let gridSize = 200.;
+
 let count = 8;
+
 let gridStep = gridSize /. float_of_int(count);
 
 let createRandomFruit = () => {
@@ -45,7 +47,7 @@ let setup = env => {
       pos: (25., 25.)
     },
     score: 0,
-    fruits: fruits
+    fruits
   };
 };
 
@@ -68,7 +70,7 @@ let keyDirection = (state: agent, env) => {
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (
     x == 0. || x == 200. ? 1. : mod_float(x, 25.),
-    y == 0. || y == 200. ? 1. : mod_float(y, 25.),
+    y == 0. || y == 200. ? 1. : mod_float(y, 25.)
   );
   let reverseDirection =
     switch (direction, nextDirection) {
@@ -81,7 +83,7 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   if (reverseDirection) {
     nextDirection;
   } else {
-    switch (intersection) {
+    switch intersection {
     | (0., 0.) => nextDirection
     | _ => direction
     };
@@ -102,7 +104,7 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-  switch (direction) {
+  switch direction {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
   | Right => {direction, nextDirection, pos: (x +. 1., y)}
@@ -120,13 +122,16 @@ let drawPacman = (state: agent, env) => {
   state;
 };
 
-let drawFruit = (fruit: fruit, env) => {
-  open Draw;
-  ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env);
-};
+let drawFruit = (fruit: fruit, env) =>
+  Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
+
+let isColliding = (fruitPos, pacmanPos) => fruitPos == pacmanPos;
 
 let draw = (state, env) => {
   open Draw;
+  let fruits =
+    state.fruits
+    |> List.filter(fruit => ! isColliding(fruit.pos, state.pacman.pos));
   background(Constants.white, env);
   stroke(Constants.black, env);
   grid
@@ -137,7 +142,7 @@ let draw = (state, env) => {
   noStroke(env);
   List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
-  {...state, pacman: pacmanState};
+  {...state, fruits, pacman: pacmanState};
 };
 
 run(~setup, ~draw, ());
