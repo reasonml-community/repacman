@@ -6,20 +6,28 @@ type direction =
   | Left
   | Right;
 
-type state = {
+type agent = {
   direction,
   nextDirection: direction,
-  pos: (float, float),
+  pos: (float, float)
 };
+
+type state = {pacman: agent};
 
 let setup = env => {
   Env.size(~width=200, ~height=200, env);
-  {direction: Down, nextDirection: Down, pos: (25., 25.)};
+  {
+    pacman: {
+      direction: Down,
+      nextDirection: Down,
+      pos: (25., 25.)
+    }
+  };
 };
 
 let grid = [0, 1, 2, 3, 4, 5, 6, 7];
 
-let keyDirection = (state, env) => {
+let keyDirection = (state: agent, env) => {
   let isUp = Env.keyPressed(Events.Up, env);
   let isDown = Env.keyPressed(Events.Down, env);
   let isRight = Env.keyPressed(Events.Right, env);
@@ -34,10 +42,7 @@ let keyDirection = (state, env) => {
 };
 
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
-  let intersection = (
-    x == 0. || x == 200. ? 1. : mod_float(x, 25.),
-    y == 0. || y == 200. ? 1. : mod_float(y, 25.),
-  );
+  let intersection = (mod_float(x, 25.), mod_float(y, 25.));
   let reverseDirection =
     switch (direction, nextDirection) {
     | (Up, Down) => true
@@ -49,7 +54,7 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   if (reverseDirection) {
     nextDirection;
   } else {
-    switch (intersection) {
+    switch intersection {
     | (0., 0.) => nextDirection
     | _ => direction
     };
@@ -66,11 +71,11 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
   let y =
     switch (direction, y) {
     | (Up, 0.) => 200.
-    | (Down, 200.) => 0.
+    | (Down, 198.) => 0.
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-  switch (direction) {
+  switch direction {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
   | Right => {direction, nextDirection, pos: (x +. 1., y)}
@@ -78,22 +83,30 @@ let move = ({direction, pos: (x, y), nextDirection}) => {
   };
 };
 
-let draw = (state, env) => {
+let drawPacman = (state: agent, env) => {
   open Draw;
-  background(Constants.white, env);
-  stroke(Constants.black, env);
-  grid
-  |> List.iter(gridPoint => {
-       line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
-       line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
-     });
-  noStroke(env);
   fill(Constants.red, env);
   let nextDirection = keyDirection(state, env);
   let state = move({...state, nextDirection});
   let (x, y) = state.pos;
   rectf(~pos=(x -. 5., y -. 5.), ~width=10., ~height=10., env);
   state;
+};
+
+let draw = (state, env) => {
+  open Draw;
+  background(Constants.white, env);
+  stroke(Constants.black, env);
+  List.iter(
+    gridPoint => {
+      line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
+      line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
+    },
+    grid
+  );
+  noStroke(env);
+  let pacmanState = drawPacman(state.pacman, env);
+  {...state, pacman: pacmanState};
 };
 
 run(~setup, ~draw, ());
