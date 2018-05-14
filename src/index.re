@@ -1,5 +1,23 @@
 open Reprocessing;
 
+let rec rangef = (start: float, end_: float) =>
+  if (start >= end_) {
+    [];
+  } else {
+    [start, ...rangef(start +. 1., end_)];
+  };
+
+module GridSizes = {
+  let gridWidth = 400;
+  let gridWidthf = float_of_int(gridWidth);
+  let gridHeight = 400;
+  let gridHeightf = float_of_int(gridHeight);
+  let numOfColumns = 20;
+  let numOfColumnsf = float_of_int(numOfColumns);
+  let stepSizef = gridWidthf /. numOfColumnsf;
+  let gridColumnsf = rangef(0., numOfColumnsf);
+};
+
 type direction =
   | Up
   | Down
@@ -30,20 +48,12 @@ let initialState = {
   pacman: {
     direction: Down,
     nextDirection: Down,
-    pos: (25., 25.),
+    pos: (GridSizes.gridWidthf /. 2., GridSizes.gridHeightf /. 2.),
   },
   score: 0,
   fruits: [],
   paused: false,
 };
-
-let gridSize = 200.;
-
-let count = 8;
-
-let gridStep = gridSize /. float_of_int(count);
-
-let grid = [0, 1, 2, 3, 4, 5, 6, 7];
 
 let keyDirection = (state: agent, env) => {
   let isUp = Env.keyPressed(Events.Up, env);
@@ -61,8 +71,10 @@ let keyDirection = (state: agent, env) => {
 
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (
-    x == 0. || x == 200. ? 1. : mod_float(x, 25.),
-    y == 0. || y == 200. ? 1. : mod_float(y, 25.),
+    x == 0. || x == GridSizes.gridWidthf ?
+      1. : mod_float(x, GridSizes.stepSizef),
+    y == 0. || y == GridSizes.gridHeightf ?
+      1. : mod_float(y, GridSizes.stepSizef),
   );
   let reverseDirection =
     switch (direction, nextDirection) {
@@ -84,15 +96,15 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
 
 let move = ({direction, pos: (x, y), nextDirection}) => {
   let x =
-    switch (direction, x) {
-    | (Right, 200.) => 0.
-    | (Left, 0.) => 200.
+    switch (direction) {
+    | Right => x == GridSizes.gridWidthf ? 0. : x
+    | Left => x == 0. ? GridSizes.gridWidthf : x
     | _ => x
     };
   let y =
-    switch (direction, y) {
-    | (Up, 0.) => 200.
-    | (Down, 198.) => 0.
+    switch (direction) {
+    | Up => y == 0. ? GridSizes.gridHeightf : y
+    | Down => y == GridSizes.gridHeightf ? 0. : y
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
@@ -123,8 +135,16 @@ let drawPacmanNoMove = (state: agent, env) => {
 };
 
 let createRandomFruit = () => {
-  let x = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
-  let y = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
+  let x =
+    Utils.(
+      round(randomf(~min=1., ~max=GridSizes.numOfColumnsf -. 1.))
+      *. GridSizes.stepSizef
+    );
+  let y =
+    Utils.(
+      round(randomf(~min=1., ~max=GridSizes.numOfColumnsf -. 1.))
+      *. GridSizes.stepSizef
+    );
   {pos: (x, y), points: 1};
 };
 
@@ -177,15 +197,19 @@ let filterFruitsAndGetPoints = state =>
 
 let drawGrid = env =>
   Draw.(
-    grid
+    GridSizes.gridColumnsf
     |> List.iter(gridPoint => {
-         line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
-         line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
+         let xStart = (gridPoint *. GridSizes.stepSizef, 0.);
+         let xEnd = (gridPoint *. GridSizes.stepSizef, GridSizes.gridHeightf);
+         linef(~p1=xStart, ~p2=xEnd, env);
+         let yStart = (0., gridPoint *. GridSizes.stepSizef);
+         let yEnd = (GridSizes.gridWidthf, gridPoint *. GridSizes.stepSizef);
+         linef(~p1=yStart, ~p2=yEnd, env);
        })
   );
 
 let setup = env => {
-  Env.size(~width=200, ~height=200, env);
+  Env.size(~width=GridSizes.gridWidth, ~height=GridSizes.gridHeight, env);
   initialState;
 };
 
