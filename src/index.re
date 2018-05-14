@@ -128,9 +128,16 @@ let createRandomFruit = () => {
   {pos: (x, y), points: 1};
 };
 
-let getRandomFruit = () =>
+let rec getRandomFruit = validatePosition =>
   switch (Utils.random(~min=1, ~max=100)) {
-  | 1 => Some(createRandomFruit())
+  | 1 =>
+    let newFruit = createRandomFruit();
+    let isPositionTaken = validatePosition(newFruit);
+    if (isPositionTaken) {
+      getRandomFruit(validatePosition);
+    } else {
+      Some(newFruit);
+    };
   | _ => None
   };
 
@@ -138,7 +145,10 @@ let getUpdatedListOfFruitsWithChance = fruits =>
   switch (fruits) {
   | [_, _, _] => fruits
   | _ =>
-    let randomFruit = getRandomFruit();
+    let randomFruit =
+      getRandomFruit(newFruit =>
+        fruits |> List.exists(fruit => newFruit.pos == fruit.pos)
+      );
     switch (randomFruit) {
     | Some(f) => [f, ...fruits]
     | None => fruits
