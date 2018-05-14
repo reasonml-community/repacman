@@ -6,33 +6,24 @@ This is a Hackathon project from the [ReasonConf 2018](https://www.reason-conf.c
 
 <img align="center" src="./pacman_1.gif" />
 
-## Run locally
+## Getting started
 
+```bash
+$ yarn
+$ yarn build
+$ yarn start # opens a OpenGL window
 ```
-npm run build
-npm start
-```
 
-## TODOs
+## Commands
 
-* ✅ ~~press ESC to reset the game~~
-* ✅ ~~press SPACE to pause the game~~
-* ✅ ~~spawn fruits on unique positions~~
-* refactor grid to be a Map
-  * Pacman (and Ghosts) can only run on the map paths
-  * Fruits can only be spawn within the map paths
-* introduce Ghosts
-  * improve collision detection with Ghosts
-  * Ghosts make you lose a life
-  * player starts with 3 lifes
-* introduce Pacdots
-  * positioned on each grid intersection
-* game textures
-  * for map
-  * for elements (pacman, ghosts, fruits)
+* pressing ESC will reset the game
+* pressing SPACE will pause the game
+* arrow keyboards will move Pacman
 
 ## Contributing
 
 Contributions are welcomed!
 
-If you would like to work on some of the listed features, open an issue so that we know who is working on what.
+Check out the [Issues](https://github.com/reasonml-community/repacman/issues) to see who is working on what. In case something is not taken and you feel like working on that, feel free to assign the issue to yourself and give it a try!
+
+We recommend opening an issue first before working on something, it makes it more transparent what's going on.
