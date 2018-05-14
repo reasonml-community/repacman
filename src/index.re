@@ -185,26 +185,30 @@ let draw = (state, env) => {
   stroke(Constants.black, env);
   drawGrid(env);
   noStroke(env);
-  let state =
-    switch (state.paused, Env.keyPressed(Events.Space, env)) {
-    | (true, true) => {...state, paused: false}
-    | (false, true) => {...state, paused: true}
-    | (true, false) => {...state, paused: true}
-    | (false, false) => {...state, paused: false}
-    };
-  if (state.paused) {
-    scoreDisplay(~score=state.score, env);
-    state.fruits |> List.iter(fruit => drawFruit(fruit, env));
-    drawPacmanNoMove(state.pacman, env);
-    text(~body="Paused", ~pos=(45, 90), env);
-    state;
+  if (Env.keyPressed(Events.Escape, env)) {
+    initialState;
   } else {
-    let (fruits, newScore) = filterFruitsAndGetPoints(state);
-    scoreDisplay(~score=newScore, env);
-    let fruits = getUpdatedListOfFruitsWithChance(fruits);
-    fruits |> List.iter(fruit => drawFruit(fruit, env));
-    let pacmanState = drawPacman(state.pacman, env);
-    {...state, fruits, score: newScore, pacman: pacmanState};
+    let state =
+      switch (state.paused, Env.keyPressed(Events.Space, env)) {
+      | (true, true) => {...state, paused: false}
+      | (false, true) => {...state, paused: true}
+      | (true, false) => {...state, paused: true}
+      | (false, false) => {...state, paused: false}
+      };
+    if (state.paused) {
+      scoreDisplay(~score=state.score, env);
+      state.fruits |> List.iter(fruit => drawFruit(fruit, env));
+      drawPacmanNoMove(state.pacman, env);
+      text(~body="Paused", ~pos=(45, 90), env);
+      state;
+    } else {
+      let (fruits, newScore) = filterFruitsAndGetPoints(state);
+      scoreDisplay(~score=newScore, env);
+      let fruits = getUpdatedListOfFruitsWithChance(fruits);
+      fruits |> List.iter(fruit => drawFruit(fruit, env));
+      let pacmanState = drawPacman(state.pacman, env);
+      {...state, fruits, score: newScore, pacman: pacmanState};
+    };
   };
 };
 
