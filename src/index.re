@@ -25,35 +25,21 @@ type state = {
   fruits: list(fruit),
 };
 
+let initialState = {
+  pacman: {
+    direction: Down,
+    nextDirection: Down,
+    pos: (25., 25.),
+  },
+  score: 0,
+  fruits: [],
+};
+
 let gridSize = 200.;
 
 let count = 8;
 
 let gridStep = gridSize /. float_of_int(count);
-
-let createRandomFruit = () => {
-  let x = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
-  let y = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
-  {pos: (x, y), points: 1};
-};
-
-let setup = env => {
-  let fruits = [
-    createRandomFruit(),
-    createRandomFruit(),
-    createRandomFruit(),
-  ];
-  Env.size(~width=200, ~height=200, env);
-  {
-    pacman: {
-      direction: Down,
-      nextDirection: Down,
-      pos: (25., 25.),
-    },
-    score: 0,
-    fruits,
-  };
-};
 
 let grid = [0, 1, 2, 3, 4, 5, 6, 7];
 
@@ -126,16 +112,29 @@ let drawPacman = (state: agent, env) => {
   state;
 };
 
-/* TODO: some random fruit bizniz
+let createRandomFruit = () => {
+  let x = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
+  let y = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
+  {pos: (x, y), points: 1};
+};
 
-   let getRandomFruit = () =>
+let getRandomFruit = () =>
+  switch (Utils.random(~min=1, ~max=100)) {
+  | 1 => Some(createRandomFruit())
+  | _ => None
+  };
 
-   let addRandomFruits = fruits => {
-     switch fruits {
-     | [_, _, _] => fruits
-     | _ => //???
-     }
-   } */
+let getUpdatedListOfFruitsWithChance = fruits =>
+  switch (fruits) {
+  | [_, _, _] => fruits
+  | _ =>
+    let randomFruit = getRandomFruit();
+    switch (randomFruit) {
+    | Some(f) => [f, ...fruits]
+    | None => fruits
+    };
+  };
+
 let drawFruit = (fruit: fruit, env) =>
   Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
 
@@ -156,7 +155,7 @@ let filterFruitsAndGetPoints = state =>
        ([], state.score)
      );
 
-let drawGrid = (env) =>
+let drawGrid = env =>
   Draw.(
     grid
     |> List.iter(gridPoint => {
@@ -164,6 +163,11 @@ let drawGrid = (env) =>
          line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
        })
   );
+
+let setup = env => {
+  Env.size(~width=200, ~height=200, env);
+  initialState;
+};
 
 let draw = (state, env) => {
   open Draw;
@@ -173,7 +177,8 @@ let draw = (state, env) => {
   noStroke(env);
   let (fruits, newScore) = filterFruitsAndGetPoints(state);
   scoreDisplay(~score=newScore, env);
-  List.iter(fruit => drawFruit(fruit, env), state.fruits);
+  let fruits = getUpdatedListOfFruitsWithChance(fruits);
+  fruits |> List.iter(fruit => drawFruit(fruit, env));
   let pacmanState = drawPacman(state.pacman, env);
   {fruits, score: newScore, pacman: pacmanState};
 };
