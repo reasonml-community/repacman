@@ -1,6 +1,6 @@
 # RePacman
 
-This is a Hackathon project from the ReasonConf 2018 in Vienna.
+This is a Hackathon project from the [ReasonConf 2018](https://www.reason-conf.com/) in Vienna.
 
 > 🚧 It's still a work in progress but it shows what you can build with Reprocessing and ReasonML ❤️
 
