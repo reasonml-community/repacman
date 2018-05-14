@@ -15,6 +15,7 @@ npm start
 
 * ✅ ~~press ESC to reset the game~~
 * ✅ ~~press SPACE to pause the game~~
+* ✅ ~~spawn fruits on unique positions~~
 * refactor grid to be a Map
   * Pacman (and Ghosts) can only run on the map paths
   * Fruits can only be spawn within the map paths
