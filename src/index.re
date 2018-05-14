@@ -128,15 +128,14 @@ let drawPacman = (state: agent, env) => {
 
 /* TODO: some random fruit bizniz
 
-let getRandomFruit = () =>  
+   let getRandomFruit = () =>
 
-let addRandomFruits = fruits => {
-  switch fruits {
-  | [_, _, _] => fruits
-  | _ => //???
-  }
-} */
-
+   let addRandomFruits = fruits => {
+     switch fruits {
+     | [_, _, _] => fruits
+     | _ => //???
+     }
+   } */
 let drawFruit = (fruit: fruit, env) =>
   Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
 
@@ -145,31 +144,38 @@ let isColliding = (fruitPos, pacmanPos) => fruitPos == pacmanPos;
 let scoreDisplay = (~score: int, env) =>
   Draw.(text(~body=string_of_int(score), ~pos=(3, 3), env));
 
+let filterFruitsAndGetPoints = state =>
+  state.fruits
+  |> List.fold_left(
+       ((fruits, score), fruit) =>
+         if (isColliding(fruit.pos, state.pacman.pos)) {
+           (fruits, fruit.points + score);
+         } else {
+           ([fruit, ...fruits], score);
+         },
+       ([], state.score)
+     );
+
+let drawGrid = (env) =>
+  Draw.(
+    grid
+    |> List.iter(gridPoint => {
+         line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
+         line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
+       })
+  );
+
 let draw = (state, env) => {
   open Draw;
-  let (fruits, newScore) =
-    state.fruits
-    |> List.fold_left(
-         ((fruits, score), fruit) =>
-           if (isColliding(fruit.pos, state.pacman.pos)) {
-             (fruits, fruit.points + score);
-           } else {
-             ([fruit, ...fruits], score);
-           },
-         ([], state.score),
-       );
   background(Constants.white, env);
   stroke(Constants.black, env);
-  grid
-  |> List.iter(gridPoint => {
-       line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
-       line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
-     });
+  drawGrid(env);
   noStroke(env);
+  let (fruits, newScore) = filterFruitsAndGetPoints(state);
   scoreDisplay(~score=newScore, env);
   List.iter(fruit => drawFruit(fruit, env), state.fruits);
   let pacmanState = drawPacman(state.pacman, env);
-  {...state, fruits, score: newScore, pacman: pacmanState};
+  {fruits, score: newScore, pacman: pacmanState};
 };
 
 run(~setup, ~draw, ());
