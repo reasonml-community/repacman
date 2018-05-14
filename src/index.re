@@ -15,7 +15,10 @@ module GridSizes = {
   let numOfColumns = 20;
   let numOfColumnsf = float_of_int(numOfColumns);
   let stepSizef = gridWidthf /. numOfColumnsf;
-  let gridColumnsf = rangef(0., numOfColumnsf);
+  let gridPointsMatrix = (
+    rangef(1., numOfColumnsf),
+    rangef(1., numOfColumnsf),
+  );
 };
 
 type direction =
@@ -30,6 +33,7 @@ type agent = {
   direction,
   nextDirection: direction,
   pos,
+  velocity: float,
 };
 
 type fruit = {
@@ -49,6 +53,7 @@ let initialState = {
     direction: Down,
     nextDirection: Down,
     pos: (GridSizes.gridWidthf /. 2., GridSizes.gridHeightf /. 2.),
+    velocity: 2.,
   },
   score: 0,
   fruits: [],
@@ -69,7 +74,7 @@ let keyDirection = (state: agent, env) => {
   };
 };
 
-let getDirection = ({direction, pos: (x, y), nextDirection}) => {
+let getDirection = ({direction, nextDirection, pos: (x, y)}) => {
   let intersection = (
     x == 0. || x == GridSizes.gridWidthf ?
       1. : mod_float(x, GridSizes.stepSizef),
@@ -94,25 +99,26 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   };
 };
 
-let move = ({direction, pos: (x, y), nextDirection}) => {
+let move = (agentState: agent) => {
+  let (prevX, prevY) = agentState.pos;
   let x =
-    switch (direction) {
-    | Right => x == GridSizes.gridWidthf ? 0. : x
-    | Left => x == 0. ? GridSizes.gridWidthf : x
-    | _ => x
+    switch (agentState.direction) {
+    | Right => prevX == GridSizes.gridWidthf ? 0. : prevX
+    | Left => prevX == 0. ? GridSizes.gridWidthf : prevX
+    | _ => prevX
     };
   let y =
-    switch (direction) {
-    | Up => y == 0. ? GridSizes.gridHeightf : y
-    | Down => y == GridSizes.gridHeightf ? 0. : y
-    | _ => y
+    switch (agentState.direction) {
+    | Up => prevY == 0. ? GridSizes.gridHeightf : prevY
+    | Down => prevY == GridSizes.gridHeightf ? 0. : prevY
+    | _ => prevY
     };
-  let direction = getDirection({direction, nextDirection, pos: (x, y)});
+  let direction = getDirection({...agentState, pos: (x, y)});
   switch (direction) {
-  | Up => {direction, nextDirection, pos: (x, y -. 1.)}
-  | Down => {direction, nextDirection, pos: (x, y +. 1.)}
-  | Right => {direction, nextDirection, pos: (x +. 1., y)}
-  | Left => {direction, nextDirection, pos: (x -. 1., y)}
+  | Up => {...agentState, direction, pos: (x, y -. agentState.velocity)}
+  | Down => {...agentState, direction, pos: (x, y +. agentState.velocity)}
+  | Right => {...agentState, direction, pos: (x +. agentState.velocity, y)}
+  | Left => {...agentState, direction, pos: (x -. agentState.velocity, y)}
   };
 };
 
@@ -173,8 +179,11 @@ let getUpdatedListOfFruitsWithChance = fruits =>
     };
   };
 
-let drawFruit = (fruit: fruit, env) =>
-  Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
+let drawFruit = (fruit: fruit, env) => {
+  open Draw;
+  fill(Constants.green, env);
+  ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env);
+};
 
 let isColliding = (fruitPos, pacmanPos) => fruitPos == pacmanPos;
 
@@ -193,18 +202,20 @@ let filterFruitsAndGetPoints = state =>
        ([], state.score)
      );
 
-let drawGrid = env =>
-  Draw.(
-    GridSizes.gridColumnsf
-    |> List.iter(gridPoint => {
-         let xStart = (gridPoint *. GridSizes.stepSizef, 0.);
-         let xEnd = (gridPoint *. GridSizes.stepSizef, GridSizes.gridHeightf);
-         linef(~p1=xStart, ~p2=xEnd, env);
-         let yStart = (0., gridPoint *. GridSizes.stepSizef);
-         let yEnd = (GridSizes.gridWidthf, gridPoint *. GridSizes.stepSizef);
-         linef(~p1=yStart, ~p2=yEnd, env);
-       })
-  );
+let drawGrid = env => {
+  open Draw;
+  fill(Utils.color(~r=0, ~g=0, ~b=0, ~a=100), env);
+  let (pointsX, pointsY) = GridSizes.gridPointsMatrix;
+  pointsX
+  |> List.iter(pointRow => {
+       let pointX = pointRow *. GridSizes.stepSizef;
+       pointsY
+       |> List.iter(pointColumn => {
+            let pointY = pointColumn *. GridSizes.stepSizef;
+            ellipsef(~center=(pointX, pointY), ~radx=1., ~rady=1., env);
+          });
+     });
+};
 
 let setup = env => {
   Env.size(~width=GridSizes.gridWidth, ~height=GridSizes.gridHeight, env);
@@ -214,9 +225,7 @@ let setup = env => {
 let draw = (state, env) => {
   open Draw;
   background(Constants.white, env);
-  stroke(Constants.black, env);
   drawGrid(env);
-  noStroke(env);
   if (Env.keyPressed(Events.Escape, env)) {
     initialState;
   } else {
