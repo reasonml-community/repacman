@@ -121,16 +121,14 @@ let drawPacman = (state: agent, env) => {
   fill(Constants.red, env);
   let nextDirection = keyDirection(state, env);
   let state = move({...state, nextDirection});
-  let (x, y) = state.pos;
-  rectf(~pos=(x -. 5., y -. 5.), ~width=10., ~height=10., env);
+  ellipsef(~center=state.pos, ~radx=15., ~rady=15., env);
   state;
 };
 
 let drawPacmanNoMove = (state: agent, env) => {
   open Draw;
   fill(Constants.red, env);
-  let (x, y) = state.pos;
-  rectf(~pos=(x -. 5., y -. 5.), ~width=10., ~height=10., env);
+  ellipsef(~center=state.pos, ~radx=15., ~rady=15., env);
   ();
 };
 
