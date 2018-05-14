@@ -23,6 +23,7 @@ type state = {
   pacman: agent,
   score: int,
   fruits: list(fruit),
+  paused: bool,
 };
 
 let initialState = {
@@ -33,6 +34,7 @@ let initialState = {
   },
   score: 0,
   fruits: [],
+  paused: false,
 };
 
 let gridSize = 200.;
@@ -112,6 +114,14 @@ let drawPacman = (state: agent, env) => {
   state;
 };
 
+let drawPacmanNoMove = (state: agent, env) => {
+  open Draw;
+  fill(Constants.red, env);
+  let (x, y) = state.pos;
+  rectf(~pos=(x -. 5., y -. 5.), ~width=10., ~height=10., env);
+  ();
+};
+
 let createRandomFruit = () => {
   let x = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
   let y = float_of_int(Utils.random(~min=1, ~max=count - 1)) *. gridStep;
@@ -175,12 +185,27 @@ let draw = (state, env) => {
   stroke(Constants.black, env);
   drawGrid(env);
   noStroke(env);
-  let (fruits, newScore) = filterFruitsAndGetPoints(state);
-  scoreDisplay(~score=newScore, env);
-  let fruits = getUpdatedListOfFruitsWithChance(fruits);
-  fruits |> List.iter(fruit => drawFruit(fruit, env));
-  let pacmanState = drawPacman(state.pacman, env);
-  {fruits, score: newScore, pacman: pacmanState};
+  let state =
+    switch (state.paused, Env.keyPressed(Events.Space, env)) {
+    | (true, true) => {...state, paused: false}
+    | (false, true) => {...state, paused: true}
+    | (true, false) => {...state, paused: true}
+    | (false, false) => {...state, paused: false}
+    };
+  if (state.paused) {
+    scoreDisplay(~score=state.score, env);
+    state.fruits |> List.iter(fruit => drawFruit(fruit, env));
+    drawPacmanNoMove(state.pacman, env);
+    text(~body="Paused", ~pos=(45, 90), env);
+    state;
+  } else {
+    let (fruits, newScore) = filterFruitsAndGetPoints(state);
+    scoreDisplay(~score=newScore, env);
+    let fruits = getUpdatedListOfFruitsWithChance(fruits);
+    fruits |> List.iter(fruit => drawFruit(fruit, env));
+    let pacmanState = drawPacman(state.pacman, env);
+    {...state, fruits, score: newScore, pacman: pacmanState};
+  };
 };
 
 run(~setup, ~draw, ());
