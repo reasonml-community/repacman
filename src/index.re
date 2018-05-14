@@ -42,13 +42,25 @@ type fruit = {
 };
 
 type state = {
+  backgroundImage: imageT,
   pacman: agent,
   score: int,
   fruits: list(fruit),
   paused: bool,
 };
 
-let initialState = {
+let getInitialState = env => {
+  backgroundImage:
+    Draw.(
+      /* Create an image texture and draw the grid dots inside of it.
+         We can then check if the image has been rendered and skip the
+         rerendering if it's not necessary. */
+      createImage(
+        ~width=GridSizes.gridWidth,
+        ~height=GridSizes.gridHeight,
+        env
+      )
+    ),
   pacman: {
     direction: Down,
     nextDirection: Down,
@@ -219,15 +231,19 @@ let drawGrid = env => {
 
 let setup = env => {
   Env.size(~width=GridSizes.gridWidth, ~height=GridSizes.gridHeight, env);
-  initialState;
+  getInitialState(env);
 };
 
 let draw = (state, env) => {
   open Draw;
   background(Constants.white, env);
-  drawGrid(env);
+  /* Check if the image has already been drawn. If so, just render it! */
+  if (! isImageDrawnTo(state.backgroundImage)) {
+    withImage(state.backgroundImage, env, imgEnv => drawGrid(imgEnv));
+  };
+  image(state.backgroundImage, ~pos=(0, 0), env);
   if (Env.keyPressed(Events.Escape, env)) {
-    initialState;
+    getInitialState(env);
   } else {
     let state =
       switch (state.paused, Env.keyPressed(Events.Space, env)) {
