@@ -11,23 +11,25 @@ type pos = (float, float);
 type agent = {
   direction,
   nextDirection: direction,
-  pos,
+  pos
 };
 
 type fruit = {
   pos,
-  points: int,
+  points: int
 };
 
 type state = {
   pacman: agent,
   score: int,
-  fruits: list(fruit),
+  fruits: list(fruit)
 };
 
-let gridSize = 200.;
+type gridSize = float;
 
-let count = 8;
+let gridSize = 400.;
+
+let count = 5;
 
 let gridStep = gridSize /. float_of_int(count);
 
@@ -38,24 +40,30 @@ let createRandomFruit = () => {
 };
 
 let setup = env => {
-  let fruits = [
-    createRandomFruit(),
-    createRandomFruit(),
-    createRandomFruit(),
-  ];
-  Env.size(~width=200, ~height=200, env);
+  let fruits = [createRandomFruit(), createRandomFruit(), createRandomFruit()];
+  Env.size(~width=int_of_float(gridSize), ~height=int_of_float(gridSize), env);
   {
     pacman: {
       direction: Down,
       nextDirection: Down,
-      pos: (25., 25.),
+      pos: (gridStep, gridStep)
     },
     score: 0,
-    fruits,
+    fruits
   };
 };
 
-let grid = [0, 1, 2, 3, 4, 5, 6, 7];
+let int_range = (a, b) => {
+  let rec int_range_rec = (l, a, b) =>
+    if (a > b) {
+      l;
+    } else {
+      int_range_rec([b, ...l], a, b - 1);
+    };
+  int_range_rec([], a, b);
+};
+
+let grid = int_range(0, count);
 
 let keyDirection = (state: agent, env) => {
   let isUp = Env.keyPressed(Events.Up, env);
@@ -73,8 +81,8 @@ let keyDirection = (state: agent, env) => {
 
 let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   let intersection = (
-    x == 0. || x == 200. ? 1. : mod_float(x, 25.),
-    y == 0. || y == 200. ? 1. : mod_float(y, 25.),
+    x == 0. || x == gridSize ? 1. : mod_float(x, gridStep),
+    y == 0. || y == gridSize ? 1. : mod_float(y, gridStep)
   );
   let reverseDirection =
     switch (direction, nextDirection) {
@@ -87,7 +95,7 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
   if (reverseDirection) {
     nextDirection;
   } else {
-    switch (intersection) {
+    switch intersection {
     | (0., 0.) => nextDirection
     | _ => direction
     };
@@ -97,18 +105,18 @@ let getDirection = ({direction, pos: (x, y), nextDirection}) => {
 let move = ({direction, pos: (x, y), nextDirection}) => {
   let x =
     switch (direction, x) {
-    | (Right, 200.) => 0.
-    | (Left, 0.) => 200.
+    | _ when (direction, x) == (Right, gridSize) => 0.
+    | _ when (direction, x) == (Left, 0.) => gridSize
     | _ => x
     };
   let y =
     switch (direction, y) {
-    | (Up, 0.) => 200.
-    | (Down, 198.) => 0.
+    | _ when (direction, y) == (Up, 0.) => gridSize
+    | _ when (direction, y) == (Down, gridSize -. 2.) => 0.
     | _ => y
     };
   let direction = getDirection({direction, nextDirection, pos: (x, y)});
-  switch (direction) {
+  switch direction {
   | Up => {direction, nextDirection, pos: (x, y -. 1.)}
   | Down => {direction, nextDirection, pos: (x, y +. 1.)}
   | Right => {direction, nextDirection, pos: (x +. 1., y)}
@@ -128,15 +136,14 @@ let drawPacman = (state: agent, env) => {
 
 /* TODO: some random fruit bizniz
 
-let getRandomFruit = () =>  
+   let getRandomFruit = () =>
 
-let addRandomFruits = fruits => {
-  switch fruits {
-  | [_, _, _] => fruits
-  | _ => //???
-  }
-} */
-
+   let addRandomFruits = fruits => {
+     switch fruits {
+     | [_, _, _] => fruits
+     | _ => //???
+     }
+   } */
 let drawFruit = (fruit: fruit, env) =>
   Draw.(ellipsef(~center=fruit.pos, ~radx=5., ~rady=5., env));
 
@@ -156,14 +163,22 @@ let draw = (state, env) => {
            } else {
              ([fruit, ...fruits], score);
            },
-         ([], state.score),
+         ([], state.score)
        );
   background(Constants.white, env);
   stroke(Constants.black, env);
   grid
   |> List.iter(gridPoint => {
-       line(~p1=(gridPoint * 25, 0), ~p2=(gridPoint * 25, 200), env);
-       line(~p1=(0, gridPoint * 25), ~p2=(200, gridPoint * 25), env);
+       line(
+         ~p1=(gridPoint * int_of_float(gridStep), 0),
+         ~p2=(gridPoint * int_of_float(gridStep), int_of_float(gridSize)),
+         env
+       );
+       line(
+         ~p1=(0, gridPoint * int_of_float(gridStep)),
+         ~p2=(int_of_float(gridSize), gridPoint * int_of_float(gridStep)),
+         env
+       );
      });
   noStroke(env);
   scoreDisplay(~score=newScore, env);
