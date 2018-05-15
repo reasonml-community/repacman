@@ -4,7 +4,7 @@ This is a Hackathon project from the [ReasonConf 2018](https://www.reason-conf.c
 
 > 🚧 It's still a work in progress but it shows what you can build with Reprocessing and ReasonML ❤️
 
-<img align="center" src="./pacman_1.gif" />
+![pacman_2](https://user-images.githubusercontent.com/1110551/40017714-776f5e64-57ba-11e8-9e6d-add775eed1b9.gif)
 
 ## Getting started
 
