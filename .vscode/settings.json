@@ -1,3 +1,4 @@
 {
-  "reason.diagnostics.tools": ["merlin", "bsb"]
+  "reason.diagnostics.tools": ["merlin", "bsb"],
+  "reason.path.bsb": "./node_modules/bs-platform/lib/bsb"
 }
